@@ -81,9 +81,22 @@ jobs:
         if: env.image-exists != 'true'
         run: |
           docker manifest create \
-            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }} \
             --amend ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}-amd64 \
-            --amend ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}-arm64
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}
+
+          docker manifest annotate \
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }} \
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}-amd64 \
+            --os linux --arch amd64
+
+          docker manifest create \
+            --amend ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}-arm64 \
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}
+
+          docker manifest annotate \
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }} \
+            ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }}-arm64 \
+            --os linux --arch arm64
 
           DIGEST=$(docker manifest push ghcr.io/${{ github.repository_owner }}/kubectl:${{ steps.rancher-kubectl.outputs.tag }})
           echo "digest=$DIGEST" >> $GITHUB_ENV
